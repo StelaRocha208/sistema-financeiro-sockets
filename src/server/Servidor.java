@@ -1,4 +1,3 @@
-
 import java.io.*;
 import java.net.*;
 import java.util.HashMap;
@@ -8,20 +7,23 @@ import java.util.Locale;
 
 public class Servidor {
 
-    // Armazena o número da conta e o saldo correspondente
     static Map<String, Double> contas = new HashMap<>();
+
+    static final String PASTA_CONTAS = "contas";
 
     public static void main(String[] args) {
 
         // Scanner usado para receber as configurações digitadas pelo usuário
         Scanner scanner = new Scanner(System.in);
 
-        // Solicita o endereço IP e a porta que o servidor irá utilizar
+        // Solicita o endereço IP e a porta
         System.out.print("Digite o IP do servidor: ");
         String ip = scanner.nextLine();
 
         System.out.print("Digite a porta: ");
         int porta = scanner.nextInt();
+
+        carregarContas();
 
         try {
             // Cria o socket TCP do servidor
@@ -36,7 +38,6 @@ public class Servidor {
             System.out.println("Porta: " + porta);
             System.out.println("Aguardando conexão...");
 
-            // Aceita a conexão do cliente
             Socket cliente = servidor.accept();
 
             System.out.println("Cliente conectado!");
@@ -55,7 +56,6 @@ public class Servidor {
 
             String mensagem;
 
-            // Fica aguardando os comandos enviados pelo cliente
             while ((mensagem = entrada.readLine()) != null) {
 
                 System.out.println("Comando recebido: " + mensagem);
@@ -66,10 +66,8 @@ public class Servidor {
                     break;
                 }
 
-                // Divide o comando em partes
                 String[] partes = mensagem.trim().split("\\s+");
 
-                // Verifica se foi enviado algum comando
                 if (partes.length == 0 || partes[0].isEmpty()) {
                     saida.println("[FALHA] Comando vazio.");
                     continue;
@@ -119,7 +117,6 @@ public class Servidor {
 
                     String numeroConta = partes[1];
 
-                    // Verifica se a conta existe
                     if (!contas.containsKey(numeroConta)) {
 
                         saida.println("[FALHA] Conta não encontrada.");
@@ -148,7 +145,6 @@ public class Servidor {
 
                     String numeroConta = partes[1];
 
-                    // Verifica se a conta existe
                     if (!contas.containsKey(numeroConta)) {
 
                         saida.println("[FALHA] Conta não encontrada.");
@@ -167,10 +163,9 @@ public class Servidor {
                             continue;
                         }
 
-                        // Obtém o saldo atual
+                        // Obtém o saldo atual e atualiza
                         double saldoAtual = contas.get(numeroConta);
 
-                        // Atualiza o saldo
                         double novoSaldo = saldoAtual + valor;
 
                         contas.put(numeroConta, novoSaldo);
@@ -199,7 +194,6 @@ public class Servidor {
 
                     String numeroConta = partes[1];
 
-                    // Verifica se a conta existe
                     if (!contas.containsKey(numeroConta)) {
 
                         saida.println("[FALHA] Conta não encontrada.");
@@ -218,7 +212,6 @@ public class Servidor {
                             continue;
                         }
 
-                        // Obtém o saldo atual
                         double saldoAtual = contas.get(numeroConta);
 
                         // Verifica se existe saldo suficiente
@@ -256,6 +249,9 @@ public class Servidor {
                 }
             }
 
+            // Salva todas as contas antes de encerrar o servidor
+            salvarContas();
+
             // Fecha a conexão com o cliente
             cliente.close();
 
@@ -273,12 +269,125 @@ public class Servidor {
         }
     }
 
+    // Formata os valores monetários com duas casas decimais
     static String formatarValor(double valor) {
 
         return String.format(
                 new Locale("pt", "BR"),
                 "R$ %.2f",
                 valor
+        );
+    }
+
+    // Carrega as contas salvas em arquivos ao iniciar o servidor
+    static void carregarContas() {
+
+        File pasta = new File(PASTA_CONTAS);
+
+        if (!pasta.exists()) {
+            pasta.mkdirs();
+            return;
+        }
+
+        // Obtém os arquivos de contas existentes
+        File[] arquivos = pasta.listFiles(
+                (diretorio, nome) ->
+                        nome.startsWith("conta_") && nome.endsWith(".txt")
+        );
+
+        // Se não houver arquivos, não há contas para carregar
+        if (arquivos == null) {
+            return;
+        }
+
+        // Percorre todos os arquivos de contas
+        for (File arquivo : arquivos) {
+
+            try (BufferedReader leitor =
+                         new BufferedReader(new FileReader(arquivo))) {
+
+                String linhaConta = leitor.readLine();
+
+                String linhaSaldo = leitor.readLine();
+
+                if (linhaConta != null && linhaSaldo != null) {
+
+                    String numeroConta =
+                            linhaConta.replace("Número da conta: ", "").trim();
+
+                    String valorSaldo =
+                            linhaSaldo.replace("Saldo: R$ ", "").trim();
+
+                    // Converte a vírgula decimal para ponto
+                    valorSaldo = valorSaldo.replace(",", ".");
+
+                    double saldo = Double.parseDouble(valorSaldo);
+
+                    // Adiciona a conta ao mapa
+                    contas.put(numeroConta, saldo);
+                }
+
+            } catch (IOException | NumberFormatException e) {
+
+                System.out.println(
+                        "[FALHA] Não foi possível carregar a conta: "
+                        + arquivo.getName()
+                );
+            }
+        }
+
+        System.out.println(
+                "[SUCESSO] Contas carregadas: "
+                + contas.size()
+        );
+    }
+
+    // Salva todas as contas em arquivos individuais
+    static void salvarContas() {
+
+        File pasta = new File(PASTA_CONTAS);
+
+        // Cria a pasta caso ela ainda não exista
+        if (!pasta.exists()) {
+            pasta.mkdirs();
+        }
+
+        // Percorre todas as contas armazenadas
+        for (Map.Entry<String, Double> conta : contas.entrySet()) {
+
+            String numeroConta = conta.getKey();
+            double saldo = conta.getValue();
+
+            // Cria um arquivo para cada conta
+            File arquivo = new File(
+                    pasta,
+                    "conta_" + numeroConta + ".txt"
+            );
+
+            try (PrintWriter escritor =
+                         new PrintWriter(new FileWriter(arquivo))) {
+
+                // Salva o número da conta de forma organizada
+                escritor.println(
+                        "Número da conta: " + numeroConta
+                );
+
+                escritor.println(
+                        "Saldo: " + formatarValor(saldo)
+                );
+
+            } catch (IOException e) {
+
+                System.out.println(
+                        "[FALHA] Não foi possível salvar a conta: "
+                        + numeroConta
+                );
+            }
+        }
+
+        System.out.println(
+                "[SUCESSO] Contas salvas: "
+                + contas.size()
         );
     }
 }
