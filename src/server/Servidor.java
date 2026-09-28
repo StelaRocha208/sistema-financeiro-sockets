@@ -11,6 +11,8 @@ public class Servidor {
 
     static final String PASTA_CONTAS = "contas";
 
+    static final String ARQUIVO_TRANSACOES = "transacoes.txt";
+
     public static void main(String[] args) {
 
         // Scanner usado para receber as configurações digitadas pelo usuário
@@ -147,6 +149,13 @@ public class Servidor {
 
                     if (!contas.containsKey(numeroConta)) {
 
+                        registrarTransacao(
+                                numeroConta,
+                                "DEPÓSITO",
+                                partes[2],
+                                "FALHA - Conta não encontrada"
+                        );
+
                         saida.println("[FALHA] Conta não encontrada.");
                         continue;
                     }
@@ -157,6 +166,14 @@ public class Servidor {
 
                         // O valor do depósito deve ser positivo
                         if (valor <= 0) {
+
+                            registrarTransacao(
+                                    numeroConta,
+                                    "DEPÓSITO",
+                                    valor,
+                                    "FALHA - Valor inválido"
+                            );
+
                             saida.println(
                                     "[FALHA] O valor deve ser maior que zero."
                             );
@@ -170,10 +187,24 @@ public class Servidor {
 
                         contas.put(numeroConta, novoSaldo);
 
+                        registrarTransacao(
+                                numeroConta,
+                                "DEPÓSITO",
+                                valor,
+                                "SUCESSO"
+                        );
+
                         // Retorna apenas a mensagem de sucesso
                         saida.println("[SUCESSO] Depósito realizado.");
 
                     } catch (NumberFormatException e) {
+
+                        registrarTransacao(
+                                numeroConta,
+                                "DEPÓSITO",
+                                partes[2],
+                                "FALHA - Valor inválido"
+                        );
 
                         saida.println(
                                 "[FALHA] Valor inválido."
@@ -196,6 +227,13 @@ public class Servidor {
 
                     if (!contas.containsKey(numeroConta)) {
 
+                        registrarTransacao(
+                                numeroConta,
+                                "SAQUE",
+                                partes[2],
+                                "FALHA - Conta não encontrada"
+                        );
+
                         saida.println("[FALHA] Conta não encontrada.");
                         continue;
                     }
@@ -206,6 +244,14 @@ public class Servidor {
 
                         // O valor do saque deve ser positivo
                         if (valor <= 0) {
+
+                            registrarTransacao(
+                                    numeroConta,
+                                    "SAQUE",
+                                    valor,
+                                    "FALHA - Valor inválido"
+                            );
+
                             saida.println(
                                     "[FALHA] O valor deve ser maior que zero."
                             );
@@ -216,6 +262,13 @@ public class Servidor {
 
                         // Verifica se existe saldo suficiente
                         if (valor > saldoAtual) {
+
+                            registrarTransacao(
+                                    numeroConta,
+                                    "SAQUE",
+                                    valor,
+                                    "FALHA - Saldo insuficiente"
+                            );
 
                             saida.println(
                                     "[FALHA] Saldo insuficiente."
@@ -228,10 +281,24 @@ public class Servidor {
 
                             contas.put(numeroConta, novoSaldo);
 
+                            registrarTransacao(
+                                    numeroConta,
+                                    "SAQUE",
+                                    valor,
+                                    "SUCESSO"
+                            );
+
                             saida.println("[SUCESSO] Saque realizado.");
                         }
 
                     } catch (NumberFormatException e) {
+
+                        registrarTransacao(
+                                numeroConta,
+                                "SAQUE",
+                                partes[2],
+                                "FALHA - Valor inválido"
+                        );
 
                         saida.println(
                                 "[FALHA] Valor inválido."
@@ -389,5 +456,67 @@ public class Servidor {
                 "[SUCESSO] Contas salvas: "
                 + contas.size()
         );
+    }
+
+    // Registra as transações realizadas no arquivo de log
+    static void registrarTransacao(
+            String numeroConta,
+            String operacao,
+            double valor,
+            String resultado
+    ) {
+
+        try (PrintWriter escritor =
+                     new PrintWriter(
+                             new FileWriter(
+                                     ARQUIVO_TRANSACOES,
+                                     true
+                             )
+                     )) {
+
+            escritor.println(
+                    "Conta: " + numeroConta
+                    + " | Operação: " + operacao
+                    + " | Valor: " + formatarValor(valor)
+                    + " | Resultado: " + resultado
+            );
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "[FALHA] Não foi possível registrar a transação."
+            );
+        }
+    }
+
+    // Registra transações cujo valor não pôde ser convertido para número
+    static void registrarTransacao(
+            String numeroConta,
+            String operacao,
+            String valor,
+            String resultado
+    ) {
+
+        try (PrintWriter escritor =
+                     new PrintWriter(
+                             new FileWriter(
+                                     ARQUIVO_TRANSACOES,
+                                     true
+                             )
+                     )) {
+
+            escritor.println(
+                    "Conta: " + numeroConta
+                    + " | Operação: " + operacao
+                    + " | Valor: " + valor
+                    + " | Resultado: " + resultado
+            );
+
+        } catch (IOException e) {
+
+            System.out.println(
+                    "[FALHA] Não foi possível registrar a transação."
+            );
+        }
     }
 }

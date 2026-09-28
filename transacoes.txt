@@ -1,0 +1,7 @@
+Conta: 67890 | Operação: DEPÓSITO | Valor: R$ 100,00 | Resultado: SUCESSO
+Conta: 67890 | Operação: SAQUE | Valor: R$ 50,00 | Resultado: SUCESSO
+Conta: 67890 | Operação: SAQUE | Valor: R$ 800,00 | Resultado: FALHA - Saldo insuficiente
+Conta: 45678 | Operação: DEPÓSITO | Valor: R$ 200,00 | Resultado: SUCESSO
+Conta: 45678 | Operação: SAQUE | Valor: R$ 300,00 | Resultado: SUCESSO
+Conta: 100 | Operação: SAQUE | Valor: 100 | Resultado: FALHA - Conta não encontrada
+Conta: 67890 | Operação: SAQUE | Valor: R$ 100,00 | Resultado: SUCESSO
