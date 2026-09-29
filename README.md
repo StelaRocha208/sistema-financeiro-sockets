@@ -135,11 +135,49 @@ O servidor valida as operações e retorna mensagens de sucesso ou falha.
 
 ## 💾 Persistência de dados
 
-As contas são armazenadas individualmente na pasta `contas/`. Ao iniciar o servidor, os dados existentes são carregados automaticamente.
+Ao encerrar o servidor, as contas são salvas na pasta contas/, com um arquivo de texto individual para cada conta.
+
+Exemplo:
+
+```
+contas/
+└── conta_67890.txt
+```
+
+Conteúdo:
+
+```
+Número da conta: 67890
+Saldo: R$ 250,00
+```
+
+Ao iniciar novamente, o servidor carrega automaticamente as contas salvas.
+
+Mensagem exibida:
+
+```
+[SUCESSO] Contas carregadas: 2
+```
 
 ## 📝 Log de transações
 
 As operações de depósito e saque também são registradas no arquivo `transacoes.txt`, incluindo a conta, operação, valor e resultado.
+
+O arquivo registra:
+
+- Número da conta
+- Operação realizada
+- Valor
+- Resultado da operação
+
+
+Exemplo:
+
+```
+Conta: 67890 | Operação: DEPÓSITO | Valor: R$ 100,00 | Resultado: SUCESSO
+Conta: 67890 | Operação: SAQUE | Valor: R$ 50,00 | Resultado: SUCESSO
+Conta: 67890 | Operação: SAQUE | Valor: R$ 500,00 | Resultado: FALHA - Saldo insuficiente
+```
 
 ## 📡 Protocolo
 
