@@ -29,7 +29,7 @@ Desenvolver uma aplicação distribuída utilizando sockets TCP, colocando em pr
 
 ## 🏗️ Arquitetura
 
-O sistema é dividido em duas aplicações:
+O sistema é dividido em duas aplicações.
 
 ### Servidor
 
@@ -67,5 +67,80 @@ O projeto foi executado utilizando duas máquinas virtuais no VirtualBox, conect
 
 A porta utilizada para a comunicação é:
 
-```text
+```
 5000
+```
+
+## 📂 Estrutura do projeto
+
+```
+sistema-financeiro-sockets/
+├── contas/
+├── src/
+│   ├── client/
+│   │   └── Cliente.java
+│   └── server/
+│       └── Servidor.java
+├── transacoes.txt
+└── README.md
+```
+
+A pasta `contas/` e o arquivo `transacoes.txt` são utilizados pelo servidor para persistência e registro das operações.
+
+## ▶️ Como executar
+
+Os comandos abaixo devem ser executados na raiz do projeto.
+
+### Servidor
+
+```bash
+javac src/server/Servidor.java
+java -cp src/server Servidor
+```
+
+Informe quando solicitado:
+
+```
+IP: 192.168.56.10
+Porta: 5000
+```
+
+### Cliente
+
+Em outra máquina virtual:
+
+```bash
+javac src/client/Cliente.java
+java -cp src/client Cliente
+```
+
+Informe quando solicitado:
+
+```
+IP do servidor: 192.168.56.10
+Porta: 5000
+```
+
+## 💰 Operações
+
+O cliente disponibiliza as seguintes operações:
+
+- Criar conta
+- Ver saldo
+- Depositar
+- Sacar
+- Sair
+
+O servidor valida as operações e retorna mensagens de sucesso ou falha.
+
+## 💾 Persistência de dados
+
+As contas são armazenadas individualmente na pasta `contas/`. Ao iniciar o servidor, os dados existentes são carregados automaticamente.
+
+## 📝 Log de transações
+
+As operações de depósito e saque também são registradas no arquivo `transacoes.txt`, incluindo a conta, operação, valor e resultado.
+
+## 📡 Protocolo
+
+A comunicação entre cliente e servidor utiliza TCP. Os comandos são enviados pelo cliente e processados pelo servidor, que retorna uma resposta correspondente à operação solicitada.
